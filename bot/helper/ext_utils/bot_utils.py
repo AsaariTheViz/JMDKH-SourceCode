@@ -145,7 +145,6 @@ def get_readable_message():
             msg += f"\n<b>├ Engine:</b> {download.engine}"
             msg += f"\n<b>└ ETA:</b> {download.eta()}"
             msg += f"<b> | Elapsed:</b> {get_readable_time(time() - download.extra_details['startTime'])}"
-            msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>\n"
             if hasattr(download, 'seeders_num'):
                 try:
                     msg += f"\n<b>🌱 Seeders:</b> {download.seeders_num()} | <b>🐌 Leechers:</b> {download.leechers_num()}"
@@ -159,6 +158,7 @@ def get_readable_message():
             msg += f"\n<b>├ Time</b>: {download.seeding_time()}"
         else:
             msg += f"\n<b>├ Size:</b> {download.size()}"
+        msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>\n\n"
     if len(msg) == 0:
         return None, None
     dl_speed = 0
