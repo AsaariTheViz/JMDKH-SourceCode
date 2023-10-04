@@ -37,6 +37,18 @@ class MirrorStatus:
     STATUS_CHECKING = "📝 CheckUp"
     STATUS_SEEDING = "🌧 Seed"
 
+class EngineStatus:
+    STATUS_ARIA = "Aria2c📶"
+    STATUS_GD = "Google Api♻️"
+    STATUS_MEGA = "MegaSDK⭕️"
+    STATUS_QB = "qBittorrent🦠"
+    STATUS_TG = "Pyrogram💥"
+    STATUS_YT = "YT-dlp🌟"
+    STATUS_EXT = "Extract | pExtract⚔️"
+    STATUS_SPLIT_MERGE = "FFmpeg🍿"
+    STATUS_ZIP = "p7zip🛠"
+    STATUS_QUEUE = "Sleep💤"
+
 
 class setInterval:
     def __init__(self, interval, action):
