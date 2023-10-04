@@ -45,21 +45,19 @@ async def stats(client, message):
         commit_time = commit_time[0]
     else:
         last_commit = 'No UPSTREAM_REPO'
-    stats = f'<b><u>REPOSITORY INFO</u></b>\n\n' \
-            f'<b>• Updated:</b> {commit_date}\n'\
-            f'<b>• Commited On: </b>{commit_time}\n'\
-            f'<b>• From: </b>{commit_from}\n'\
-            f'\n'\
-            f'<b><u>BOT INFO</u></b>\n\n'\
-            f'<b>• Uptime:</b> {currentTime}\n'\
-            f'<b>• System:</b> {osUptime}\n'\
-            f'\n'\
-            f'<b><u>SYSTEM INFO</u></b>\n\n'\
-            f'<b>• CPU Usage:</b> {cpuUsage}%\n'\
-            f'<b>• RAM Usage:</b> {mem_p}%\n'\
-            f'<b>• Disk Usage:</b> {disk}%\n'\
-            f'<b>• Free Disk Space:</b> {get_readable_file_size(free)}\n'\
-            f'<b>• Total Disk Space:</b> {get_readable_file_size(total)}\n'
+    stats = f'<b><u>REPOSITORY INFO 🧩</u></b>\n' \
+            f'<b>Updated:</b> {commit_date}\n'\
+            f'<b>Commited On: </b>{commit_time}\n'\
+            f'<b>From: </b>{commit_from}\n'\
+            f'<b>Uptime:</b> {currentTime}\n'\
+            f'<u><b>BOT STATISTICS 🧮</b></u>\n'\
+            f'<b>Bot uptime :</b> {currentTime}\n'\
+            f'<b>Sys uptime :</b> {osUptime}\n'\
+            f'<b>CPU usage  :</b> {cpuUsage}%\n'\
+            f'<b>RAM usage  :</b> {memory.percent}%\n'\
+            f'<b>Disk usage :</b> {disk}%\n'\
+            f'<b>Free space :</b> {get_readable_file_size(free)}\n'\
+            f'<b>Total space:</b> {get_readable_file_size(total)}\n\n'
     await sendMessage(message, stats)
 
 async def start(client, message):
