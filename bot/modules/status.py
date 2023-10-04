@@ -18,7 +18,7 @@ async def mirror_status(client, message):
     if count == 0:
         currentTime = get_readable_time(time() - botStartTime)
         free = get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)
-        
+        msg = "<u><b>Pᴏᴡᴇʀᴇᴅ ʙʏ ᴜʟᴛʀᴏɴ ᴍʟᴛʙ...⚡️</b></u>\n\n"
         msg += f'No Active Downloads !\n___________________________'
         msg += f"\n<b>Bot UpTime</b>: {currentTime}"
         msg += f"\n<b>Disk Free</b>: {free}"
