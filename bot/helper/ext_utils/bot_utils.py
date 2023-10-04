@@ -145,6 +145,7 @@ def get_readable_message():
             msg += f"\n<b>├ Engine:</b> {download.engine}"
             msg += f"\n<b>└ ETA:</b> {download.eta()}"
             msg += f"<b> | Elapsed:</b> {get_readable_time(time() - download.extra_details['startTime'])}"
+            msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>\n"
             if hasattr(download, 'seeders_num'):
                 try:
                     msg += f"\n<b>🌱 Seeders:</b> {download.seeders_num()} | <b>🐌 Leechers:</b> {download.leechers_num()}"
@@ -158,7 +159,6 @@ def get_readable_message():
             msg += f"\n<b>├ Time</b>: {download.seeding_time()}"
         else:
             msg += f"\n<b>├ Size:</b> {download.size()}"
-            msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>\n\n"
     if len(msg) == 0:
         return None, None
     dl_speed = 0
@@ -188,7 +188,7 @@ def get_readable_message():
         buttons.ibutton(f"{PAGE_NO}/{PAGES}", "status ref")
         buttons.ibutton("Next", "status nex")
         button = buttons.build_menu(3)
-    msg += f"<b>Tasks</b>: {tasks}"
+    msg += f"\n<b>Tasks</b>: {tasks}"
     msg += f"\n<b>UPTIME:</b> {currentTime}"
     msg += f"<b> | <b>FREE:</b> {get_readable_file_size(disk_usage('/usr/src/app/downloads/').free)}"
     msg += f"\n<b>🔻 DL:</b> {get_readable_file_size(dl_speed)}/s"
