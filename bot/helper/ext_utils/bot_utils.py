@@ -127,7 +127,7 @@ def get_readable_message():
         msg += f"<code>{escape(f'{download.name()}')}</code>\n"
         msg += f"<b>┌ {download.status()} with {download.engine}</b>"
         if download.status() not in [MirrorStatus.STATUS_SPLITTING, MirrorStatus.STATUS_SEEDING]:
-            msg += f"\n<b>├ <a href='https://github.com/5hojib/Luna'>{get_progress_bar_string(download.progress())}</a></b> {download.progress()}"
+            msg += f"\n<b>├ <b>{get_progress_bar_string(download.progress())}</b> {download.progress()}"
             msg += f"\n<b>├ </b>{download.processed_bytes()} of {download.size()}"
             msg += f"\n<b>├ Speed</b>: {download.speed()}"
             if hasattr(download, 'seeders_num'):
@@ -143,8 +143,8 @@ def get_readable_message():
             msg += f"\n<b>├ Time</b>: {download.seeding_time()}"
         else:
             msg += f"\n<b>├ Size</b>: {download.size()}"
-        msg += f"\n<b>├ ETA</b>: {download.eta()}"
-        msg += f"\n<b> | Elapsed</b>: {get_readable_time(time() - download.extra_details['startTime'])}"
+            msg += f"\n<b>└ ETA</b>: {download.eta()}"
+            msg += f"\n<b> | Elapsed</b>: {get_readable_time(time() - download.extra_details['startTime'])}"
         msg += f"\n/{BotCommands.CancelMirror}_{download.gid()[:8]}\n\n"
     if len(msg) == 0:
         return None, None
