@@ -61,9 +61,10 @@ async def stats(client, message):
 
 async def start(client, message):
     if config_dict['DM_MODE']:
-        start_string = f'This bot can Leech all your links|files|torrents to Telegram 📥.\n<b>Type {help_command} to get a list of available commands</b>\n\n ➥ 👨‍💻 OWNER : @cmd_rulf'
+        start_string = 'Bot Started.\n' \
+                    'Now I will send your files or links here.\n'
     else:
-        start_string = f'This bot can Leech all your links|files|torrents to Telegram 📥.\n<b>Type {help_command} to get a list of available commands</b>\n\n ➥ 👨‍💻 OWNER : @cmd_rulf'
+        start_string = f'This bot can Leech all your links|files|torrents to Telegram 📥.\n<b>Type /help to get a list of available commands and Supports</b>\n\n ➥ 👨‍💻 OWNER : @cmd_rulf'
               
     await sendMessage(message, start_string)
 
@@ -87,7 +88,7 @@ async def ping(client, message):
     start_time = int(round(time() * 1000))
     reply = await sendMessage(message, "Starting Ping")
     end_time = int(round(time() * 1000))
-    await editMessage(reply, f'🌋 <b>Ping:</b> {value} ms.')
+    await editMessage(reply, f'🌋 <b>Ping:</b> {end_time - start_time} ms.')
 
 
 async def log(client, message):
