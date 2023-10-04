@@ -125,11 +125,11 @@ def get_readable_message():
         globals()['PAGE_NO'] = PAGES
     for download in list(download_dict.values())[STATUS_START:STATUS_LIMIT+STATUS_START]:
         msg += f"<code>{escape(f'{download.name()}')}</code>\n"
-        msg += f"<b>┌ {download.status()} with {download.engine}</b>"
+        msg += f"<b>┌ {download.status()}</b>"
         if download.status() not in [MirrorStatus.STATUS_SPLITTING, MirrorStatus.STATUS_SEEDING]:
             msg += f"\n<b>├ <b>{get_progress_bar_string(download.progress())}</b> {download.progress()}"
             msg += f"\n<b>├ </b>{download.processed_bytes()} of {download.size()}"
-            msg += f"\n<b>├ Speed</b>: {download.speed()}"
+            msg += f"\n<b>├ Speed:</b> {download.speed()}"
             if hasattr(download, 'seeders_num'):
                 try:
                     msg += f"\n<b>├ 🌱 Seeders:</b> {download.seeders_num()} | <b>🐌 Leechers:</b> {download.leechers_num()}"
@@ -142,9 +142,10 @@ def get_readable_message():
             msg += f"\n<b>├ Ratio</b>: {download.ratio()}"
             msg += f"\n<b>├ Time</b>: {download.seeding_time()}"
         else:
-            msg += f"\n<b>├ Size</b>: {download.size()}"
-            msg += f"\n<b>└ ETA</b>: {download.eta()}"
-            msg += f"\n<b> | Elapsed</b>: {get_readable_time(time() - download.extra_details['startTime'])}"
+            msg += f"\n<b>├ Size:</b> {download.size()}"
+            msg += f"\n<b>├ Engine:</b> {download.engine}"
+            msg += f"\n<b>└ ETA:</b> {download.eta()}"
+            msg += f"<b> | Elapsed:</b> {get_readable_time(time() - download.extra_details['startTime'])}"
         msg += f"\n/{BotCommands.CancelMirror}_{download.gid()[:8]}\n\n"
     if len(msg) == 0:
         return None, None
