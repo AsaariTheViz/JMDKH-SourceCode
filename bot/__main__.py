@@ -35,28 +35,27 @@ async def stats(client, message):
     osUptime = get_readable_time(time() - boot_time())
     cpuUsage = cpu_percent(interval=0.5)
     if await aiopath.exists('.git'):
-        last_commit = await cmd_exec("git log -1 --date=short --pretty=format:'%cd <b>From</b> %cr'", True)
-        last_commit = last_commit[0]
-        commit_from = await cmd_exec("git log -1 --date=short --pretty=format:'%cr'", True)
-        commit_from = commit_from[0]
-        commit_date = await cmd_exec("git log -1 --date=format:'%d %B %Y' --pretty=format:'%ad'", True)
-        commit_date = commit_date[0]
-        commit_time = await cmd_exec("git log -1 --date=format:'%I:%M:%S %p' --pretty=format:'%ad'", True)
-        commit_time = commit_time[0]
+        commit_id = (await cmd_exec("git log -1 --pretty=format:'%h'", True))[0]
+        commit_from = (await cmd_exec("git log -1 --date=short --pretty=format:'%cr'", True))[0]
+        commit_date = (await cmd_exec("git log -1 --date=format:'%d %B %Y' --pretty=format:'%ad'", True))[0]
+        commit_time = (await cmd_exec("git log -1 --date=format:'%I:%M:%S %p' --pretty=format:'%ad'", True))[0]
+        commit_name = (await cmd_exec("git log -1 --pretty=format:'%s'", True))[0]
     else:
         last_commit = 'No UPSTREAM_REPO'
-    stats = f'<b><u>REPOSITORY INFO 🧩</u></b>\n' \
-            f'<b>Updated:-</b>{commit_date}\n'\
-            f'<b>Commited On:- </b>{commit_time}\n'\
-            f'<b>From:- </b>{commit_from}\n\n'\
-            f'<u><b>BOT STATISTICS 🧮</b></u>\n'\
-            f'<b>Bot uptime:-</b> {currentTime}\n'\
-            f'<b>Sys uptime:-</b> {osUptime}\n'\
-            f'<b>CPU usage:-</b> {cpuUsage}%\n'\
-            f'<b>RAM usage:-</b> {memory.percent}%\n'\
-            f'<b>Disk usage:-</b> {disk}%\n'\
-            f'<b>Free space:-</b> {get_readable_file_size(free)}\n'\
-            f'<b>Total space:-</b> {get_readable_file_size(total)}\n\n'
+    stats = f'<b><u> Rᴇᴘᴏꜱɪᴛᴏʀʏ ɪɴꜰᴏ 📝</u></b>\n\n' \
+            f'<b>Lᴀꜱᴛ Cᴏᴍᴍɪᴛ :-</b> {commit_id}\n'\
+            f'<b>Cᴏᴍᴍɪᴛ Dᴀᴛᴇ :-</b> {commit_date}\n'\
+            f'<b>Cᴏᴍᴍɪᴛᴇᴅ ᴏɴ :-</b> {commit_time}\n'\
+            f'<b>Fʀᴏᴍ :-</b> {commit_from}\n'\
+            f'<b>Cʜᴀɴɢᴇʟᴏɢ :-</b> {commit_name}\n\n'\
+            f'<u><b> Bᴏᴛ Sᴛᴀᴛɪꜱᴛɪᴄꜱ 🧮</b></u>\n'\
+            f'<b>Bᴏᴛ Uᴘᴛɪᴍᴇ :-</b> {currentTime}\n'\
+            f'<b>Sʏꜱ ᴜᴘᴛɪᴍᴇ :-</b> {osUptime}\n'\
+            f'<b>ᴄᴘᴜ ᴜꜱᴀɢᴇ :-</b> {cpuUsage}%\n'\
+            f'<b>ʀᴀᴍ ᴜꜱᴀɢᴇ :-</b> {memory.percent}%\n'\
+            f'<b>Dɪꜱᴋ Uꜱᴀɢᴇ :-</b> {disk}%\n'\
+            f'<b>Fʀᴇᴇ Sᴘᴀᴄᴇ :-</b> {get_readable_file_size(free)}\n'\
+            f'<b>Tᴏᴛᴀʟ Sᴘᴀᴄᴇ :-</b> {get_readable_file_size(total)}\n\n'
     await sendMessage(message, stats)
 
 async def start(client, message):
