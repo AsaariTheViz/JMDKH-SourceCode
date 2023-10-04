@@ -277,6 +277,14 @@ async def load_config():
     USER_MAX_TASKS = environ.get('USER_MAX_TASKS', '')
     USER_MAX_TASKS = '' if len(USER_MAX_TASKS) == 0 else int(USER_MAX_TASKS)
 
+    UPSTREAM_REPO = environ.get('UPSTREAM_REPO', '')
+    if len(UPSTREAM_REPO) == 0:
+        UPSTREAM_REPO = ''
+
+    UPSTREAM_BRANCH = environ.get('UPSTREAM_BRANCH', '')
+    if len(UPSTREAM_BRANCH) == 0:
+        UPSTREAM_BRANCH = 'jmdkh'
+
     STORAGE_THRESHOLD = environ.get('STORAGE_THRESHOLD', '')
     STORAGE_THRESHOLD = '' if len(
         STORAGE_THRESHOLD) == 0 else float(STORAGE_THRESHOLD)
@@ -456,6 +464,8 @@ async def load_config():
         "UPTOBOX_TOKEN": UPTOBOX_TOKEN,
         "USER_SESSION_STRING": USER_SESSION_STRING,
         "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,
+        "UPSTREAM_REPO": UPSTREAM_REPO,
+        "UPSTREAM_BRANCH": UPSTREAM_BRANCH,
         "VIEW_LINK": VIEW_LINK,
         "WEB_PINCODE": WEB_PINCODE,
         "YT_DLP_QUALITY": YT_DLP_QUALITY,
