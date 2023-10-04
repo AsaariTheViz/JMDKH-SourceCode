@@ -61,14 +61,14 @@ async def stats(client, message):
 
 async def start(client, message):
     if config_dict['DM_MODE']:
-        start_string = f'<b>Welcome, To Era of Luna!</b>\n\nNow I will send your files or links here.\n'
+        start_string = f'This bot can Leech all your links|files|torrents to Telegram 📥.\n<b>Type {help_command} to get a list of available commands</b>\n\n ➥ 👨‍💻 OWNER : @cmd_rulf'
     else:
-        start_string = f'<b>Welcome, To Era of Luna!</b>\n\nThis bot can Mirror all your links To Google Drive!\n'
+        start_string = f'This bot can Leech all your links|files|torrents to Telegram 📥.\n<b>Type {help_command} to get a list of available commands</b>\n\n ➥ 👨‍💻 OWNER : @cmd_rulf'
               
     await sendMessage(message, start_string)
 
 async def restart(client, message):
-    restart_message = await sendMessage(message, "Restarting...")
+    restart_message = await sendMessage(message, "Restarting...♻️")
     if scheduler.running:
         scheduler.shutdown(wait=False)
     for interval in [QbInterval, Interval]:
@@ -87,7 +87,7 @@ async def ping(client, message):
     start_time = int(round(time() * 1000))
     reply = await sendMessage(message, "Starting Ping")
     end_time = int(round(time() * 1000))
-    await editMessage(reply, f'{end_time - start_time} ms')
+    await editMessage(reply, f'🌋 <b>Ping:</b> {value} ms.')
 
 
 async def log(client, message):
@@ -155,8 +155,8 @@ async def restart_notification():
 
     async def send_incompelete_task_message(cid, msg):
         try:
-            if msg.startswith('Restarted Successfully!'):
-                await bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully!')
+            if msg.startswith('Restarted Successfully ✔️'):
+                await bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully ✔️')
                 await bot.send_message(chat_id, msg, disable_web_page_preview=True, reply_to_message_id=msg_id)
                 await aioremove(".restartmsg")
             else:
@@ -168,7 +168,7 @@ async def restart_notification():
     if DATABASE_URL:
         if INCOMPLETE_TASK_NOTIFIER and (notifier_dict := await DbManger().get_incomplete_tasks()):
             for cid, data in notifier_dict.items():
-                msg = 'Restarted Successfully!' if cid == chat_id else 'Bot Restarted!'
+                msg = 'Restarted Successfully ✅' if cid == chat_id else 'Bot Restarted!'
                 for tag, links in data.items():
                     msg += f"\n\n{tag}: "
                     for index, link in enumerate(links, start=1):
@@ -184,7 +184,7 @@ async def restart_notification():
 
     if await aiopath.isfile(".restartmsg"):
         try:
-            await bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully!')
+            await bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully ✅')
         except:
             pass
         await aioremove(".restartmsg")
