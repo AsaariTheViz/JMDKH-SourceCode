@@ -158,7 +158,7 @@ def get_readable_message():
             msg += f"\n<b>├ Time</b>: {download.seeding_time()}"
         else:
             msg += f"\n<b>├ Size:</b> {download.size()}"
-            msg += f"\n/{BotCommands.CancelMirror} {download.gid()[:8]}\n\n"
+            msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>\n\n"
     if len(msg) == 0:
         return None, None
     dl_speed = 0
