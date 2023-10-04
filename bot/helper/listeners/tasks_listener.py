@@ -356,12 +356,12 @@ class MirrorLeechListener:
             await DbManger().rm_complete_task(self.message.link)
         LOGGER.info(f'Done Uploading {name}')
         if self.isLeech:
-            msg = f'<b>🏷️ Name: </b> <code>{escape(name)}</code>\n\n'
-            msg += f'\n<b>┏💾 Size: </b>{get_readable_file_size(size)}'
+            msg = f'<b>┏🎗️ Name: </b> <code>{escape(name)}</code>\n'
+            msg += f'\n<b>┠💾 Size: </b>{get_readable_file_size(size)}'
             msg += f'\n<b>┠📂 Total Files:</b> {folders}'
             msg += f"\n<b>┗⌛ Elapsed:</b> {get_readable_time(time() - self.extra_details['startTime'])}"
             if mime_type != 0:
-                msg += f'\n<b>• Corrupted Files</b>: {mime_type}'
+                msg += f'\n<b>💩 Corrupted Files</b>: {mime_type}'
             if not files:
                 await sendMessage(self.message, msg)
                 if self.logMessage:
