@@ -42,17 +42,17 @@ async def stats(client, message):
         commit_name = (await cmd_exec("git log -1 --pretty=format:'%s'", True))[0]
     else:
         last_commit = 'No UPSTREAM_REPO'
-    stats = f'<b><u> Rᴇᴘᴏꜱɪᴛᴏʀʏ ɪɴꜰᴏ 📝</u></b>\n\n' \
+    stats = f'<b><u>REPOSITORY INFO 📝</u></b>\n' \
             f'<b>Lᴀꜱᴛ Cᴏᴍᴍɪᴛ :-</b> {commit_id}\n'\
             f'<b>Cᴏᴍᴍɪᴛ Dᴀᴛᴇ :-</b> {commit_date}\n'\
             f'<b>Cᴏᴍᴍɪᴛᴇᴅ ᴏɴ :-</b> {commit_time}\n'\
             f'<b>Fʀᴏᴍ :-</b> {commit_from}\n'\
             f'<b>Cʜᴀɴɢᴇʟᴏɢ :-</b> {commit_name}\n\n'\
-            f'<u><b> Bᴏᴛ Sᴛᴀᴛɪꜱᴛɪᴄꜱ 🧮</b></u>\n'\
+            f'<u><b>BOT STATISTICS 🧮</b></u>\n'\
             f'<b>Bᴏᴛ Uᴘᴛɪᴍᴇ :-</b> {currentTime}\n'\
             f'<b>Sʏꜱ ᴜᴘᴛɪᴍᴇ :-</b> {osUptime}\n'\
-            f'<b>ᴄᴘᴜ ᴜꜱᴀɢᴇ :-</b> {cpuUsage}%\n'\
-            f'<b>ʀᴀᴍ ᴜꜱᴀɢᴇ :-</b> {memory.percent}%\n'\
+            f'<b>CPU ᴜꜱᴀɢᴇ :-</b> {cpuUsage}%\n'\
+            f'<b>RAM ᴜꜱᴀɢᴇ :-</b> {memory.percent}%\n'\
             f'<b>Dɪꜱᴋ Uꜱᴀɢᴇ :-</b> {disk}%\n'\
             f'<b>Fʀᴇᴇ Sᴘᴀᴄᴇ :-</b> {get_readable_file_size(free)}\n'\
             f'<b>Tᴏᴛᴀʟ Sᴘᴀᴄᴇ :-</b> {get_readable_file_size(total)}\n\n'
