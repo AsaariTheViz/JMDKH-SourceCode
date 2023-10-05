@@ -75,8 +75,8 @@ class TgUploader:
             if self.__listener.logMessage:
                 self.__sent_msg = await self.__listener.logMessage.copy(DUMP_CHAT)
             else:
-                msg = f'<b><a href="{self.__listener.message.link}">Source</a></b>' if self.__listener.isSuperGroup else self.__listener.message.text
-                msg += f'\n\n<b>• Task by</b>: {self.__listener.tag} (<code>{self.__listener.message.from_user.id}</code>)'
+                 if self.__listener.isSuperGroup else self.__listener.message.text
+                msg += f'\n<b>• Task by</b>: {self.__listener.tag} (<code>{self.__listener.message.from_user.id}</code>)'
                 self.__sent_msg = await bot.send_message(DUMP_CHAT, msg, disable_web_page_preview=True)
             if self.__listener.dmMessage:
                 self.__sent_DMmsg = self.__listener.dmMessage
