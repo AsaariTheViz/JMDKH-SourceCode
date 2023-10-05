@@ -15,11 +15,10 @@ from pyrogram.filters import command, create, regex
 from pyrogram.handlers import CallbackQueryHandler, MessageHandler
 
 from bot import (DATABASE_URL, GLOBAL_EXTENSION_FILTER, IS_PREMIUM_USER,
-                 LOGGER, MAX_SPLIT_SIZE, Interval, aria2, aria2_options,
-                 aria2c_global, bot, config_dict,
-                 download_dict, extra_buttons, get_client, list_drives_dict,
-                 qbit_options, shorteneres_list, status_reply_dict_lock,
-                 user_data)
+                 LOGGER, MAX_SPLIT_SIZE, SHORTENER_APIS, SHORTENERES, Interval,
+                 aria2, aria2_options, aria2c_global, bot, categories,
+                 config_dict, download_dict, extra_buttons, get_client,
+                 list_drives, qbit_options, status_reply_dict_lock, user_data)
 from bot.helper.ext_utils.bot_utils import (get_readable_file_size, new_thread,
                                             set_commands, setInterval,
                                             sync_to_async)
@@ -43,12 +42,19 @@ default_values = {'AUTO_DELETE_MESSAGE_DURATION': 30,
                   'LEECH_SPLIT_SIZE': MAX_SPLIT_SIZE,
                   'RSS_DELAY': 900,
                   'STATUS_UPDATE_INTERVAL': 10,
-                  'SEARCH_LIMIT': 0,
-                  'UPSTREAM_BRANCH': 'main'}
+                  'SEARCH_LIMIT': 0, 'FONT': 'code'}
 
 
 async def load_config():
 
+    
+    FONT = environ.get('FONT', '')
+    if len(FONT) == 0:
+        FONT = config_dict['FONT']
+    else:
+        FONT = FONT
+    
+    
     BOT_TOKEN = environ.get('BOT_TOKEN', '')
     if len(BOT_TOKEN) == 0:
         BOT_TOKEN = config_dict['BOT_TOKEN']
@@ -114,10 +120,14 @@ async def load_config():
                 x = x.lstrip('.')
             GLOBAL_EXTENSION_FILTER.append(x.strip().lower())
 
-    MEGA_EMAIL = environ.get('MEGA_EMAIL', '')
+    MEGA_API_KEY = environ.get('MEGA_API_KEY', '')
+    if len(MEGA_API_KEY) == 0:
+        MEGA_API_KEY = ''
+
+    MEGA_EMAIL_ID = environ.get('MEGA_EMAIL_ID', '')
     MEGA_PASSWORD = environ.get('MEGA_PASSWORD', '')
-    if len(MEGA_EMAIL) == 0 or len(MEGA_PASSWORD) == 0:
-        MEGA_EMAIL = ''
+    if len(MEGA_EMAIL_ID) == 0 or len(MEGA_PASSWORD) == 0:
+        MEGA_EMAIL_ID = ''
         MEGA_PASSWORD = ''
 
     UPTOBOX_TOKEN = environ.get('UPTOBOX_TOKEN', '')
@@ -168,15 +178,15 @@ async def load_config():
     else:
         AUTO_DELETE_MESSAGE_DURATION = int(AUTO_DELETE_MESSAGE_DURATION)
 
-    YT_DLP_OPTIONS = environ.get('YT_DLP_OPTIONS', '')
-    if len(YT_DLP_OPTIONS) == 0:
-        YT_DLP_OPTIONS = ''
+    YT_DLP_QUALITY = environ.get('YT_DLP_QUALITY', '')
+    if len(YT_DLP_QUALITY) == 0:
+        YT_DLP_QUALITY = ''
 
     SEARCH_LIMIT = environ.get('SEARCH_LIMIT', '')
     SEARCH_LIMIT = 0 if len(SEARCH_LIMIT) == 0 else int(SEARCH_LIMIT)
 
-    DUMP_CHAT_ID = environ.get('DUMP_CHAT_ID', '')
-    DUMP_CHAT_ID = '' if len(DUMP_CHAT_ID) == 0 else int(DUMP_CHAT_ID)
+    DUMP_CHAT = environ.get('DUMP_CHAT', '')
+    DUMP_CHAT = '' if len(DUMP_CHAT) == 0 else int(DUMP_CHAT)
 
     STATUS_LIMIT = environ.get('STATUS_LIMIT', '')
     STATUS_LIMIT = 8 if len(STATUS_LIMIT) == 0 else int(STATUS_LIMIT)
@@ -233,6 +243,9 @@ async def load_config():
     STOP_DUPLICATE = environ.get('STOP_DUPLICATE', '')
     STOP_DUPLICATE = STOP_DUPLICATE.lower() == 'true'
 
+    VIEW_LINK = environ.get('VIEW_LINK', '')
+    VIEW_LINK = VIEW_LINK.lower() == 'true'
+
     IS_TEAM_DRIVE = environ.get('IS_TEAM_DRIVE', '')
     IS_TEAM_DRIVE = IS_TEAM_DRIVE.lower() == 'true'
 
@@ -277,21 +290,8 @@ async def load_config():
     else:
         await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{BASE_URL_PORT} --worker-class gevent")
 
-    UPSTREAM_REPO = environ.get('UPSTREAM_REPO', '')
-    if len(UPSTREAM_REPO) == 0:
-        UPSTREAM_REPO = ' https://github.com/5hojib/Luna'
-
-    UPSTREAM_BRANCH = environ.get('UPSTREAM_BRANCH', '')
-    if len(UPSTREAM_BRANCH) == 0:
-        UPSTREAM_BRANCH = 'main'
-
-    LOG_CHAT_ID = environ.get('LOG_CHAT_ID', '')
-    if LOG_CHAT_ID.startswith('-100'):
-        LOG_CHAT_ID = int(LOG_CHAT_ID)
-    elif LOG_CHAT_ID.startswith('@'):
-        LOG_CHAT_ID = LOG_CHAT_ID.removeprefix('@')
-    else:
-        LOG_CHAT_ID = ''
+    LOG_CHAT = environ.get('LOG_CHAT', '')
+    LOG_CHAT = '' if len(LOG_CHAT) == 0 else int(LOG_CHAT)
 
     USER_MAX_TASKS = environ.get('USER_MAX_TASKS', '')
     USER_MAX_TASKS = '' if len(USER_MAX_TASKS) == 0 else int(USER_MAX_TASKS)
@@ -333,6 +333,9 @@ async def load_config():
     if not STOP_DUPLICATE_TASKS and DATABASE_URL:
         DbManger().clear_download_links()
 
+    DISABLE_DRIVE_LINK = environ.get('DISABLE_DRIVE_LINK', '')
+    DISABLE_DRIVE_LINK = DISABLE_DRIVE_LINK.lower() == 'true'
+
     DISABLE_LEECH = environ.get('DISABLE_LEECH', '')
     DISABLE_LEECH = DISABLE_LEECH.lower() == 'true'
 
@@ -354,20 +357,12 @@ async def load_config():
     if len(FSUB_IDS) == 0:
         FSUB_IDS = ''
 
-    TOKEN_TIMEOUT = environ.get('TOKEN_TIMEOUT', '')
-    if TOKEN_TIMEOUT.isdigit():
-        TOKEN_TIMEOUT = int(TOKEN_TIMEOUT)
-    else:
-        TOKEN_TIMEOUT = ''
-
-    list_drives_dict.clear()
-    categories_dict.clear()
+    list_drives.clear()
+    categories.clear()
 
     if GDRIVE_ID:
-        list_drives_dict['Main'] = {
-            "drive_id": GDRIVE_ID, "index_link": INDEX_URL}
-        categories_dict['Root'] = {
-            "drive_id": GDRIVE_ID, "index_link": INDEX_URL}
+        list_drives['Main'] = {"drive_id": GDRIVE_ID, "index_link": INDEX_URL}
+        categories['Root'] = {"drive_id": GDRIVE_ID, "index_link": INDEX_URL}
 
     if await aiopath.exists('list_drives.txt'):
         async with aiopen('list_drives.txt', 'r+') as f:
@@ -383,7 +378,7 @@ async def load_config():
                     tempdict['index_link'] = temp[2]
                 else:
                     tempdict['index_link'] = ''
-                list_drives_dict[name] = tempdict
+                list_drives[name] = tempdict
 
     if await aiopath.exists('categories.txt'):
         async with aiopen('categories.txt', 'r+') as f:
@@ -399,7 +394,7 @@ async def load_config():
                     tempdict['index_link'] = temp[2]
                 else:
                     tempdict['index_link'] = ''
-                categories_dict[name] = tempdict
+                categories[name] = tempdict
 
     extra_buttons.clear()
     if await aiopath.exists('buttons.txt'):
@@ -412,14 +407,16 @@ async def load_config():
                 if len(temp) == 2:
                     extra_buttons[temp[0].replace("_", " ")] = temp[1]
 
-    shorteneres_list.clear()
+    SHORTENERES.clear()
+    SHORTENER_APIS.clear()
     if await aiopath.exists('shorteners.txt'):
         async with aiopen('shorteners.txt', 'r+') as f:
             lines = await f.readlines()
             for line in lines:
                 temp = line.strip().split()
                 if len(temp) == 2:
-                    shorteneres_list.append({'domain': temp[0],'api_key': temp[1]})
+                    SHORTENERES.append(temp[0])
+                    SHORTENER_APIS.append(temp[1])
 
     if await aiopath.exists('accounts.zip'):
         if await aiopath.exists('accounts'):
@@ -441,7 +438,7 @@ async def load_config():
         "DATABASE_URL": DATABASE_URL,
         "DEFAULT_UPLOAD": DEFAULT_UPLOAD,
         "DOWNLOAD_DIR": DOWNLOAD_DIR,
-        "DUMP_CHAT_ID": DUMP_CHAT_ID,
+        "DUMP_CHAT": DUMP_CHAT,
         "EQUAL_SPLITS": EQUAL_SPLITS,
         "EXTENSION_FILTER": EXTENSION_FILTER,
         "GDRIVE_ID": GDRIVE_ID,
@@ -451,7 +448,8 @@ async def load_config():
         "LEECH_FILENAME_PREFIX": LEECH_FILENAME_PREFIX,
         "LEECH_SPLIT_SIZE": LEECH_SPLIT_SIZE,
         "MEDIA_GROUP": MEDIA_GROUP,
-        "MEGA_EMAIL": MEGA_EMAIL,
+        "MEGA_API_KEY": MEGA_API_KEY,
+        "MEGA_EMAIL_ID": MEGA_EMAIL_ID,
         "MEGA_PASSWORD": MEGA_PASSWORD,
         "OWNER_ID": OWNER_ID,
         "QUEUE_ALL": QUEUE_ALL,
@@ -475,16 +473,15 @@ async def load_config():
         "TELEGRAM_API": TELEGRAM_API,
         "TELEGRAM_HASH": TELEGRAM_HASH,
         "TORRENT_TIMEOUT": TORRENT_TIMEOUT,
-        "UPSTREAM_REPO": UPSTREAM_REPO,
-        "UPSTREAM_BRANCH": UPSTREAM_BRANCH,
         "UPTOBOX_TOKEN": UPTOBOX_TOKEN,
         "USER_SESSION_STRING": USER_SESSION_STRING,
         "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,
+        "VIEW_LINK": VIEW_LINK,
         "WEB_PINCODE": WEB_PINCODE,
-        "YT_DLP_OPTIONS": YT_DLP_OPTIONS,
+        "YT_DLP_QUALITY": YT_DLP_QUALITY,
         "USER_MAX_TASKS": USER_MAX_TASKS,
         "FSUB_IDS": FSUB_IDS,
-        "LOG_CHAT_ID": LOG_CHAT_ID,
+        "LOG_CHAT": LOG_CHAT,
         "STORAGE_THRESHOLD": STORAGE_THRESHOLD,
         "TORRENT_LIMIT": TORRENT_LIMIT,
         "DIRECT_LIMIT": DIRECT_LIMIT,
@@ -496,12 +493,12 @@ async def load_config():
         "ENABLE_RATE_LIMIT": ENABLE_RATE_LIMIT,
         "ENABLE_MESSAGE_FILTER": ENABLE_MESSAGE_FILTER,
         "STOP_DUPLICATE_TASKS": STOP_DUPLICATE_TASKS,
+        "DISABLE_DRIVE_LINK": DISABLE_DRIVE_LINK,
         "SET_COMMANDS": SET_COMMANDS,
         "DISABLE_LEECH": DISABLE_LEECH,
         "REQUEST_LIMITS": REQUEST_LIMITS,
         "DM_MODE": DM_MODE,
         "DELETE_LINKS": DELETE_LINKS,
-        "TOKEN_TIMEOUT": TOKEN_TIMEOUT
     }
     temp_dict = OrderedDict(sorted(temp_dict.items()))
     config_dict.update(temp_dict)
@@ -614,7 +611,7 @@ async def edit_variable(client, message, pre_message, key):
     elif key == 'DOWNLOAD_DIR':
         if not value.endswith('/'):
             value += '/'
-    elif key in ['DUMP_CHAT_ID', 'RSS_CHAT_ID', 'LOG_CHAT_ID']:
+    elif key in ['DUMP_CHAT', 'RSS_CHAT_ID', 'LOG_CHAT']:
         value = int(value)
     elif key == 'STATUS_UPDATE_INTERVAL':
         value = int(value)
@@ -655,16 +652,14 @@ async def edit_variable(client, message, pre_message, key):
                 x = x.lstrip('.')
             GLOBAL_EXTENSION_FILTER.append(x.strip().lower())
     elif key == 'GDRIVE_ID':
-        list_drives_dict['Main'] = {"drive_id": value,
-                                    "index_link": config_dict['INDEX_URL']}
-        categories_dict['Root'] = {"drive_id": value,
-                                   "index_link": config_dict['INDEX_URL']}
+        list_drives['Main'] = {"drive_id": value,
+                               "index_link": config_dict['INDEX_URL']}
+        categories['Root'] = {"drive_id": value,
+                              "index_link": config_dict['INDEX_URL']}
     elif key == 'INDEX_URL':
         if GDRIVE_ID := config_dict['GDRIVE_ID']:
-            list_drives_dict['Main'] = {
-                "drive_id": GDRIVE_ID, "index_link": value}
-            categories_dict['Root'] = {
-                "drive_id": GDRIVE_ID, "index_link": value}
+            list_drives['Main'] = {"drive_id": GDRIVE_ID, "index_link": value}
+            categories['Root'] = {"drive_id": GDRIVE_ID, "index_link": value}
     elif key not in ['SEARCH_LIMIT', 'STATUS_LIMIT'] and key.endswith(('_THRESHOLD', '_LIMIT')):
         value = float(value)
     elif value.isdigit() and key != 'FSUB_IDS':
@@ -690,7 +685,7 @@ async def edit_variable(client, message, pre_message, key):
         await set_commands(client)
 
 
-async def edit_aria(_, message, pre_message, key):
+async def edit_aria(client, message, pre_message, key):
     handler_dict[message.chat.id] = False
     value = message.text
     if key == 'newkey':
@@ -716,7 +711,7 @@ async def edit_aria(_, message, pre_message, key):
         await DbManger().update_aria2(key, value)
 
 
-async def edit_qbit(_, message, pre_message, key):
+async def edit_qbit(client, message, pre_message, key):
     handler_dict[message.chat.id] = False
     value = message.text
     if value.lower() == 'true':
@@ -735,7 +730,7 @@ async def edit_qbit(_, message, pre_message, key):
         await DbManger().update_qbittorrent(key, value)
 
 
-async def update_private_file(_, message, pre_message):
+async def update_private_file(client, message, pre_message):
     handler_dict[message.chat.id] = False
     if not message.media and (file_name := message.text):
         fn = file_name.rsplit('.zip', 1)[0]
@@ -755,17 +750,18 @@ async def update_private_file(_, message, pre_message):
         elif file_name in ['buttons.txt', 'buttons']:
             extra_buttons.clear()
         elif file_name in ['categories.txt', 'categories']:
-            categories_dict.clear()
+            categories.clear()
             if GDRIVE_ID := config_dict['GDRIVE_ID']:
-                categories_dict['Root'] = {"drive_id": GDRIVE_ID,
-                                           "index_link": config_dict['INDEX_URL']}
-        elif file_name in ['list_drives.txt', 'list_drives']:
-            list_drives_dict.clear()
+                categories['Root'] = {"drive_id": GDRIVE_ID,
+                                      "index_link": config_dict['INDEX_URL']}
+        elif file_name == ['list_drives.txt', 'list_drives']:
+            list_drives.clear()
             if GDRIVE_ID := config_dict['GDRIVE_ID']:
-                list_drives_dict['Main'] = {"drive_id": GDRIVE_ID,
-                                            "index_link": config_dict['INDEX_URL']}
-        elif file_name in ['shorteners.txt', 'shorteners']:
-            shorteneres_list.clear()
+                list_drives['Main'] = {"drive_id": GDRIVE_ID,
+                                       "index_link": config_dict['INDEX_URL']}
+        elif file_name == ['shorteners.txt', 'shorteners']:
+            SHORTENERES.clear()
+            SHORTENER_APIS.clear()
         await message.delete()
     elif doc := message.document:
         file_name = doc.file_name
@@ -778,10 +774,10 @@ async def update_private_file(_, message, pre_message):
             await (await create_subprocess_exec("7z", "x", "-o.", "-aoa", "accounts.zip", "accounts/*.json")).wait()
             await (await create_subprocess_exec("chmod", "-R", "777", "accounts")).wait()
         elif file_name == 'list_drives.txt':
-            list_drives_dict.clear()
+            list_drives.clear()
             if GDRIVE_ID := config_dict['GDRIVE_ID']:
-                list_drives_dict['Main'] = {"drive_id": GDRIVE_ID,
-                                            "index_link": config_dict['INDEX_URL']}
+                list_drives['Main'] = {"drive_id": GDRIVE_ID,
+                                       "index_link": config_dict['INDEX_URL']}
             with open('list_drives.txt', 'r+') as f:
                 lines = f.readlines()
                 for line in lines:
@@ -795,12 +791,12 @@ async def update_private_file(_, message, pre_message):
                         tempdict['index_link'] = temp[2]
                     else:
                         tempdict['index_link'] = ''
-                    list_drives_dict[name] = tempdict
+                    list_drives[name] = tempdict
         elif file_name == 'categories.txt':
-            categories_dict.clear()
+            categories.clear()
             if GDRIVE_ID := config_dict['GDRIVE_ID']:
-                list_drives_dict['Root'] = {"drive_id": GDRIVE_ID,
-                                            "index_link": config_dict['INDEX_URL']}
+                list_drives['Root'] = {"drive_id": GDRIVE_ID,
+                                       "index_link": config_dict['INDEX_URL']}
             with open('categories.txt', 'r+') as f:
                 lines = f.readlines()
                 for line in lines:
@@ -814,15 +810,17 @@ async def update_private_file(_, message, pre_message):
                         tempdict['index_link'] = temp[2]
                     else:
                         tempdict['index_link'] = ''
-                    categories_dict[name] = tempdict
+                    categories[name] = tempdict
         elif file_name == 'shorteners.txt':
-            shorteneres_list.clear()
+            SHORTENERES.clear()
+            SHORTENER_APIS.clear()
             with open('shorteners.txt', 'r+') as f:
                 lines = f.readlines()
                 for line in lines:
                     temp = line.strip().split()
                     if len(temp) == 2:
-                        shorteneres_list.append({'domain': temp[0],'api_key': temp[1]})
+                        SHORTENERES.append(temp[0])
+                        SHORTENER_APIS.append(temp[1])
         elif file_name == 'buttons.txt':
             extra_buttons.clear()
             with open('buttons.txt', 'r+') as f:
@@ -842,14 +840,7 @@ async def update_private_file(_, message, pre_message):
         elif file_name == 'config.env':
             load_dotenv('config.env', override=True)
             await load_config()
-        if '@github.com' in config_dict['UPSTREAM_REPO']:
-            buttons = ButtonMaker()
-            msg = 'Push to UPSTREAM_REPO ?'
-            buttons.ibutton('Yes!', f"botset push {file_name}")
-            buttons.ibutton('No', "botset close")
-            await sendMessage(message, msg, buttons.build_menu(2))
-        else:
-            await message.delete()
+        await message.delete()
     if file_name == 'rclone.conf':
         await rclone_serve_booter()
     await update_buttons(pre_message)
@@ -937,17 +928,15 @@ async def edit_bot_settings(client, query):
                 await (await create_subprocess_exec("pkill", "-9", "-f", "gunicorn")).wait()
                 await create_subprocess_shell("gunicorn web.wserver:app --bind 0.0.0.0:80 --worker-class gevent")
         elif data[2] == 'GDRIVE_ID':
-            if 'Main' in list_drives_dict:
-                del list_drives_dict['Main']
-            if 'Root' in categories_dict:
-                del categories_dict['Root']
+            if 'Main' in list_drives:
+                del list_drives['Main']
+            if 'Root' in categories:
+                del categories['Root']
         elif data[2] == 'INDEX_URL':
-            if (GDRIVE_ID := config_dict['GDRIVE_ID']) and 'Main' in list_drives_dict:
-                list_drives_dict['Main'] = {
-                    "drive_id": GDRIVE_ID, "index_link": ''}
-            if (GDRIVE_ID := config_dict['GDRIVE_ID']) and 'Root' in categories_dict:
-                categories_dict['Root'] = {
-                    "drive_id": GDRIVE_ID, "index_link": ''}
+            if (GDRIVE_ID := config_dict['GDRIVE_ID']) and 'Main' in list_drives:
+                list_drives['Main'] = {"drive_id": GDRIVE_ID, "index_link": ''}
+            if (GDRIVE_ID := config_dict['GDRIVE_ID']) and 'Root' in categories:
+                categories['Root'] = {"drive_id": GDRIVE_ID, "index_link": ''}
         elif data[2] == 'INCOMPLETE_TASK_NOTIFIER' and DATABASE_URL:
             await DbManger().trunc_table('tasks')
         elif data[2] == 'STOP_DUPLICATE_TASKS' and DATABASE_URL:
@@ -1019,8 +1008,8 @@ async def edit_bot_settings(client, query):
         await event_handler(client, query, pfunc, rfunc)
     elif data[1] == 'editvar' and STATE == 'view':
         value = config_dict[data[2]]
-        if value and data[2] in ['DATABASE_URL', 'TELEGRAM_API', 'TELEGRAM_HASH', 'UPSTREAM_REPO',
-                                 'USER_SESSION_STRING', 'MEGA_PASSWORD',
+        if value and data[2] in ['DATABASE_URL', 'TELEGRAM_API', 'TELEGRAM_HASH',
+                                 'USER_SESSION_STRING', 'MEGA_API_KEY', 'MEGA_PASSWORD',
                                  'UPTOBOX_TOKEN'] and not await CustomFilters.owner(client, query):
             value = 'Only owner can see this!'
         elif len(str(value)) > 200:
@@ -1044,7 +1033,7 @@ async def edit_bot_settings(client, query):
         await event_handler(client, query, pfunc, rfunc)
     elif data[1] == 'editaria' and STATE == 'view':
         value = aria2_options[data[2]]
-        if len(str(value)) > 200:
+        if len(value) > 200:
             await query.answer()
             with BytesIO(str.encode(value)) as out_file:
                 out_file.name = f"{data[2]}.txt"
@@ -1087,19 +1076,10 @@ async def edit_bot_settings(client, query):
     elif data[1] == 'push':
         await query.answer()
         filename = data[2].rsplit('.zip', 1)[0]
-        if await aiopath.exists(filename):
-            await (await create_subprocess_shell(f"git add -f {filename} \
-                                                   && git commit -sm botsettings -q \
-                                                   && git push origin {config_dict['UPSTREAM_BRANCH']} -qf")).wait()
-        else:
-            await (await create_subprocess_shell(f"git rm -r --cached {filename} \
-                                                   && git commit -sm botsettings -q \
-                                                   && git push origin {config_dict['UPSTREAM_BRANCH']} -qf")).wait()
-        await message.reply_to_message.delete()
         await message.delete()
 
 
-async def bot_settings(_, message):
+async def bot_settings(client, message):
     msg, button = await get_buttons()
     globals()['START'] = 0
     await sendMessage(message, msg, button)
