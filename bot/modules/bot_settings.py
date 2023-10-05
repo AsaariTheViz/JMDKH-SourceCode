@@ -42,6 +42,7 @@ default_values = {'AUTO_DELETE_MESSAGE_DURATION': 30,
                   'LEECH_SPLIT_SIZE': MAX_SPLIT_SIZE,
                   'RSS_DELAY': 900,
                   'STATUS_UPDATE_INTERVAL': 10,
+                  'UPSTREAM_BRANCH': 'main', 
                   'SEARCH_LIMIT': 0, 'FONT': 'code'}
 
 
@@ -290,6 +291,14 @@ async def load_config():
     else:
         await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{BASE_URL_PORT} --worker-class gevent")
 
+    UPSTREAM_REPO = environ.get('UPSTREAM_REPO', '')
+    if len(UPSTREAM_REPO) == 0:
+        UPSTREAM_REPO = 'https://github.com/GitXBot101/JMDKH-SourceCode'
+
+    UPSTREAM_BRANCH = environ.get('UPSTREAM_BRANCH', '')
+    if len(UPSTREAM_BRANCH) == 0:
+        UPSTREAM_BRANCH = 'jmdkh'
+  
     LOG_CHAT = environ.get('LOG_CHAT', '')
     LOG_CHAT = '' if len(LOG_CHAT) == 0 else int(LOG_CHAT)
 
@@ -473,6 +482,8 @@ async def load_config():
         "TELEGRAM_API": TELEGRAM_API,
         "TELEGRAM_HASH": TELEGRAM_HASH,
         "TORRENT_TIMEOUT": TORRENT_TIMEOUT,
+        "UPSTREAM_REPO": UPSTREAM_REPO,
+        "UPSTREAM_BRANCH": UPSTREAM_BRANCH,
         "UPTOBOX_TOKEN": UPTOBOX_TOKEN,
         "USER_SESSION_STRING": USER_SESSION_STRING,
         "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,
@@ -840,7 +851,14 @@ async def update_private_file(client, message, pre_message):
         elif file_name == 'config.env':
             load_dotenv('config.env', override=True)
             await load_config()
-        await message.delete()
+        if '@github.com' in config_dict['UPSTREAM_REPO']:
+            buttons = ButtonMaker()
+            msg = 'Push to UPSTREAM_REPO ?'
+            buttons.ibutton('Yes!', f"botset push {file_name}")
+            buttons.ibutton('No', "botset close")
+            await sendMessage(message, msg, buttons.build_menu(2))
+        else:
+            await message.delete()
     if file_name == 'rclone.conf':
         await rclone_serve_booter()
     await update_buttons(pre_message)
@@ -1008,7 +1026,7 @@ async def edit_bot_settings(client, query):
         await event_handler(client, query, pfunc, rfunc)
     elif data[1] == 'editvar' and STATE == 'view':
         value = config_dict[data[2]]
-        if value and data[2] in ['DATABASE_URL', 'TELEGRAM_API', 'TELEGRAM_HASH',
+        if value and data[2] in ['DATABASE_URL', 'TELEGRAM_API', 'TELEGRAM_HASH', 'UPSTREAM_REPO',
                                  'USER_SESSION_STRING', 'MEGA_API_KEY', 'MEGA_PASSWORD',
                                  'UPTOBOX_TOKEN'] and not await CustomFilters.owner(client, query):
             value = 'Only owner can see this!'
@@ -1076,6 +1094,15 @@ async def edit_bot_settings(client, query):
     elif data[1] == 'push':
         await query.answer()
         filename = data[2].rsplit('.zip', 1)[0]
+        if await aiopath.exists(filename):
+            await (await create_subprocess_shell(f"git add -f {filename} \
+                                                   && git commit -sm botsettings -q \
+                                                   && git push origin {config_dict['UPSTREAM_BRANCH']} -qf")).wait()
+        else:
+            await (await create_subprocess_shell(f"git rm -r --cached {filename} \
+                                                   && git commit -sm botsettings -q \
+                                                   && git push origin {config_dict['UPSTREAM_BRANCH']} -qf")).wait()
+        await message.reply_to_message.delete()
         await message.delete()
 
 
