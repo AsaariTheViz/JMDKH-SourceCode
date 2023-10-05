@@ -16,7 +16,7 @@ from pyrogram.handlers import CallbackQueryHandler, MessageHandler
 
 from bot import (DATABASE_URL, GLOBAL_EXTENSION_FILTER, IS_PREMIUM_USER,
                  LOGGER, MAX_SPLIT_SIZE, Interval, aria2, aria2_options,
-                 aria2c_global, bot, categories_dict, config_dict,
+                 aria2c_global, bot, config_dict,
                  download_dict, extra_buttons, get_client, list_drives_dict,
                  qbit_options, shorteneres_list, status_reply_dict_lock,
                  user_data)
